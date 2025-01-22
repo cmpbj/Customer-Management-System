@@ -14,7 +14,7 @@ def get_customers(db: Session):
     """
     return db.query(CustomerModel).all()
 
-def get_customers(db: Session, customer_id: int):
+def get_customer(db: Session, customer_id: int):
     """
     Retrieve a specific customer by its ID.
 
@@ -80,14 +80,12 @@ def update_customer(db: Session, customer_id: int, customer: CustomerUpdate):
 
     if customer.name is not None:
         db_customer.name = customer.name
-    if customer.description is not None:
-        db_customer.description = customer.description
-    if customer.price is not None:
-        db_customer.price = customer.price
-    if customer.category is not None:
-        db_customer.category = customer.category
-    if customer.supplier_email is not None:
-        db_customer.supplier_email = customer.supplier_email
+    if customer.email is not None:
+        db_customer.email = customer.email
+    if customer.phone is not None:
+        db_customer.phone = customer.phone
+    if customer.address is not None:
+        db_customer.address = customer.address
 
     db.commit()
     return db_customer
