@@ -15,7 +15,8 @@ dependencies = [
     "email-validator (>=2.2.0,<3.0.0)",
     "streamlit (>=1.41.1,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
-    "pandas (>=2.2.3,<3.0.0)"
+    "pandas (>=2.2.3,<3.0.0)",
+    "faker (>=35.0.0,<36.0.0)"
 ]
 
 

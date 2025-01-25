@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import pandas as pd
+from fake_data_transactions import generate_fake_transactions
 
 st.set_page_config(layout="wide")
 
@@ -71,8 +72,8 @@ with st.expander("View customers"):
             show_response_message(response)
 
 with st.expander("Get Details of a customer"):
-    get_id = st.number_input("customer ID", min_value=1, format="%d")
-    if st.button("Search customer"):
+    get_id = st.number_input("customer ID", min_value=1, format="%d", key="get_details_customer_id")
+    if st.button("Search customer", key="search_customer"):
         response = requests.get(f"http://backend:8000/customers/{get_id}")
         if response.status_code == 200:
             customer = response.json()
@@ -94,14 +95,14 @@ with st.expander("Get Details of a customer"):
             show_response_message(response)
 
 with st.expander("Delete customer"):
-    delete_id = st.number_input("customer ID to Delete", min_value=1, format="%d")
+    delete_id = st.number_input("customer ID to Delete", min_value=1, format="%d", key="delete_customer_id")
     if st.button("Delete customer"):
         response = requests.delete(f"http://backend:8000/customers/{delete_id}")
         show_response_message(response)
 
 with st.expander("Update customer"):
     with st.form("update_customer"):
-        update_id = st.number_input("Customer ID", min_value=1, format="%d")
+        update_id = st.number_input("Customer ID", min_value=1, format="%d", key="update_customer_id")
         new_name = st.text_input("New customer Name")
         new_email = st.text_input("New customer e-mail")
         new_phone = st.text_input("New phone")
@@ -127,3 +128,44 @@ with st.expander("Update customer"):
                 show_response_message(response)
             else:
                 st.error("No information provided for update")
+
+with st.expander("Bank statement"):
+    get_customer_transactions = st.number_input("Customer ID", min_value=1, format="%d", key="get_transactions_customer_id")
+    if st.button("Search customer", key="search_transactions_customer"):
+        response = requests.get(f"http://backend:8000/customers/{get_customer_transactions}")
+        if response.status_code == 200:
+            customer = response.json()
+            df = pd.DataFrame([customer])
+
+            df = df[
+                [
+                    "id",
+                    "name",
+                    "email",
+                    "phone",
+                    "address",
+                    "created_at",
+                ]
+            ]
+
+            transactions = generate_fake_transactions()
+            transactions = transactions[transactions["customer_id"] == get_customer_transactions]
+
+            df_final = transactions.merge(df, left_on="customer_id", right_on="id")
+            df_final = df_final[
+                [
+                    "customer_id",
+                    "transaction_date",
+                    "amount",
+                    "name",
+                ]
+            ]
+
+            df_final = df_final[['name', 'transaction_date', 'amount']]
+            df_final['month'] = pd.to_datetime(df_final['transaction_date']).dt.to_period('M')
+
+            df_final = df_final.groupby(["name", "transaction_date"]).agg({"amount": "sum"}).reset_index()
+
+            st.write(df_final.to_html(index=False), unsafe_allow_html=True)
+        else:
+            show_response_message(response)
